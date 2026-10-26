@@ -2,6 +2,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using SRS_Stock.Core.Localization;
 using SRS_Stock.Core.Models;
 using SRS_Stock.Core.Navigation;
 using SRS_Stock.Core.Resources;
@@ -16,14 +17,17 @@ public partial class ProductEditViewModel : ObservableObject
     private readonly IAppNavigator _navigator;
     private readonly IUiDispatcher _uiDispatcher;
     private readonly ILogger<ProductEditViewModel> _logger;
-    private readonly IFormatProvider _format;
+    private readonly IFormatProvider? _format;
+    private readonly EventHandler? _onLanguageChanged;
+    private string? _errorKey;
 
     public ProductEditViewModel(
         IProductRepository repository,
         IAppNavigator navigator,
         IUiDispatcher uiDispatcher,
         ILogger<ProductEditViewModel> logger,
-        IFormatProvider? formatProvider = null)
+        IFormatProvider? formatProvider = null,
+        ILanguageService? languageService = null)
     {
         ArgumentNullException.ThrowIfNull(repository);
         ArgumentNullException.ThrowIfNull(navigator);
@@ -34,8 +38,15 @@ public partial class ProductEditViewModel : ObservableObject
         _navigator = navigator;
         _uiDispatcher = uiDispatcher;
         _logger = logger;
-        _format = formatProvider ?? CultureInfo.CurrentCulture;
+        _format = formatProvider;
+        if (languageService is not null)
+        {
+            _onLanguageChanged = (_, _) => _ = _uiDispatcher.InvokeAsync(RefreshLocalizedText);
+            languageService.Changed += _onLanguageChanged;
+        }
     }
+
+    private IFormatProvider Format => _format ?? CultureInfo.CurrentCulture;
 
     public int ProductId { get; private set; }
 
@@ -101,13 +112,13 @@ public partial class ProductEditViewModel : ObservableObject
                     ex,
                     "Failed to navigate back after saving product {ProductId}",
                     product.Id);
-                await DispatchAsync(() => ErrorMessage = AppStrings.UnexpectedError).ConfigureAwait(false);
+                await DispatchAsync(() => SetError(nameof(AppStrings.UnexpectedError))).ConfigureAwait(false);
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to save product {ProductId}", product.Id);
-            await DispatchAsync(() => ErrorMessage = AppStrings.SaveFailed).ConfigureAwait(false);
+            await DispatchAsync(() => SetError(nameof(AppStrings.SaveFailed))).ConfigureAwait(false);
         }
         finally
         {
@@ -124,7 +135,7 @@ public partial class ProductEditViewModel : ObservableObject
             await DispatchAsync(() =>
             {
                 IsBusy = true;
-                ErrorMessage = string.Empty;
+                SetError(null);
             }).ConfigureAwait(false);
 
             if (ProductId == 0)
@@ -142,7 +153,7 @@ public partial class ProductEditViewModel : ObservableObject
                 await DispatchAsync(() =>
                 {
                     ClearFields();
-                    ErrorMessage = AppStrings.ProductNotFound;
+                    SetError(nameof(AppStrings.ProductNotFound));
                 }).ConfigureAwait(false);
                 return;
             }
@@ -151,14 +162,14 @@ public partial class ProductEditViewModel : ObservableObject
             {
                 Name = product.Name;
                 Barcode = product.Barcode;
-                PriceText = product.Price.ToString("N2", _format);
-                QuantityText = product.Quantity.ToString("0.##", _format);
+                PriceText = product.Price.ToString("N2", Format);
+                QuantityText = product.Quantity.ToString("0.##", Format);
             }).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to load product {ProductId}", ProductId);
-            await DispatchAsync(() => ErrorMessage = AppStrings.ProductLoadFailed).ConfigureAwait(false);
+            await DispatchAsync(() => SetError(nameof(AppStrings.ProductLoadFailed))).ConfigureAwait(false);
         }
         finally
         {
@@ -172,35 +183,35 @@ public partial class ProductEditViewModel : ObservableObject
         var name = Name.Trim();
         if (name.Length == 0)
         {
-            ErrorMessage = AppStrings.NameRequired;
+            SetError(nameof(AppStrings.NameRequired));
             _logger.LogWarning("Product save rejected: name is empty");
             return false;
         }
 
         if (!TryParseNumber(PriceText, out var price))
         {
-            ErrorMessage = AppStrings.PriceInvalid;
+            SetError(nameof(AppStrings.PriceInvalid));
             _logger.LogWarning("Product save rejected: price is not a number");
             return false;
         }
 
         if (price < 0)
         {
-            ErrorMessage = AppStrings.PriceNegative;
+            SetError(nameof(AppStrings.PriceNegative));
             _logger.LogWarning("Product save rejected: price is negative");
             return false;
         }
 
         if (!TryParseNumber(QuantityText, out var quantity))
         {
-            ErrorMessage = AppStrings.QuantityInvalid;
+            SetError(nameof(AppStrings.QuantityInvalid));
             _logger.LogWarning("Product save rejected: quantity is not a number");
             return false;
         }
 
         if (quantity < 0)
         {
-            ErrorMessage = AppStrings.QuantityNegative;
+            SetError(nameof(AppStrings.QuantityNegative));
             _logger.LogWarning("Product save rejected: quantity is negative");
             return false;
         }
@@ -213,14 +224,14 @@ public partial class ProductEditViewModel : ObservableObject
             Price = price,
             Quantity = quantity,
         };
-        ErrorMessage = string.Empty;
+        SetError(null);
         return true;
     }
 
     private bool TryParseNumber(string? text, out decimal value)
     {
         var trimmed = text?.Trim() ?? string.Empty;
-        return decimal.TryParse(trimmed, NumberStyles.Number, _format, out value);
+        return decimal.TryParse(trimmed, NumberStyles.Number, Format, out value);
     }
 
     private void ClearFields()
@@ -248,6 +259,19 @@ public partial class ProductEditViewModel : ObservableObject
                 out var parsed) => parsed,
             _ => 0,
         };
+    }
+
+    private void RefreshLocalizedText()
+    {
+        OnPropertyChanged(nameof(Title));
+        if (_errorKey is not null)
+            ErrorMessage = AppStrings.Get(_errorKey);
+    }
+
+    private void SetError(string? key)
+    {
+        _errorKey = key;
+        ErrorMessage = key is null ? string.Empty : AppStrings.Get(key);
     }
 
     private Task DispatchAsync(Action action) => _uiDispatcher.InvokeAsync(action);

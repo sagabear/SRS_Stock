@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <Color x:Key="PageBackgroundLight">#F3F4F1</Color>
+    <Color x:Key="PageBackgroundDark">#101410</Color>
+    <Color x:Key="SurfaceLight">#FFFFFF</Color>
+    <Color x:Key="SurfaceDark">#1A211C</Color>
+    <Color x:Key="InkLight">#1A2332</Color>
+    <Color x:Key="InkDark">#F3F5F2</Color>
+    <Color x:Key="MutedLight">#667085</Color>
+    <Color x:Key="MutedDark">#A8B0A9</Color>
+    <Color x:Key="LineLight">#E4E7E2</Color>
+    <Color x:Key="LineDark">#2C362F</Color>
+
+    <Color x:Key="Accent">#0E7C66</Color>
+    <Color x:Key="AccentPressed">#0A5C4C</Color>
+    <Color x:Key="OnAccent">#FFFFFF</Color>
+    <Color x:Key="AccentSoftLight">#E7F5F1</Color>
+    <Color x:Key="AccentSoftDark">#17352C</Color>
+    <Color x:Key="AccentInkDark">#7DDEC0</Color>
+
+    <Color x:Key="OutOfStockBackgroundLight">#FDECEC</Color>
+    <Color x:Key="OutOfStockBackgroundDark">#3A2220</Color>
+    <Color x:Key="OutOfStockInkLight">#9F2D2D</Color>
+    <Color x:Key="OutOfStockInkDark">#FFB4AB</Color>
+    <Color x:Key="OutOfStockLineLight">#F0C9C5</Color>
+    <Color x:Key="OutOfStockLineDark">#5C3330</Color>
+
+    <Color x:Key="DisabledFillLight">#E4E7E2</Color>
+    <Color x:Key="DisabledFillDark">#2A332E</Color>
+    <Color x:Key="DisabledInkLight">#98A2B3</Color>
+    <Color x:Key="DisabledInkDark">#6E7872</Color>
+
+    <x:Double x:Key="FontDisplay">32</x:Double>
+    <x:Double x:Key="FontTitle">17</x:Double>
+    <x:Double x:Key="FontBody">16</x:Double>
+    <x:Double x:Key="FontSmall">13</x:Double>
+
+    <Thickness x:Key="PagePadding">20,12,20,20</Thickness>
+    <Thickness x:Key="HeaderPadding">20,12,20,8</Thickness>
+    <Thickness x:Key="ListItemSpacing">0,8,0,8</Thickness>
+    <Thickness x:Key="CardPadding">16,14</Thickness>
+    <Thickness x:Key="FieldPadding">14,2</Thickness>
+
+    <x:Double x:Key="ContentWidth">720</x:Double>
+    <x:Double x:Key="FormWidth">520</x:Double>
+    <x:Double x:Key="RadiusCard">18</x:Double>
+    <x:Double x:Key="RadiusControl">14</x:Double>
+</ResourceDictionary>

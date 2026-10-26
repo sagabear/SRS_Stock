@@ -30,11 +30,11 @@ public sealed class ProductEditViewModelTests
     }
 
     [Theory]
-    [InlineData("abc", "1", "Az ár nem érvényes szám.")]
-    [InlineData("-1", "1", "Az ár nem lehet negatív.")]
-    [InlineData("10", "x", "A mennyiség nem érvényes szám.")]
-    [InlineData("10", "-0.5", "A mennyiség nem lehet negatív.")]
-    public async Task Invalid_numbers_do_not_save(string price, string quantity, string expectedMessage)
+    [InlineData("abc", "1", nameof(AppStrings.PriceInvalid))]
+    [InlineData("-1", "1", nameof(AppStrings.PriceNegative))]
+    [InlineData("10", "x", nameof(AppStrings.QuantityInvalid))]
+    [InlineData("10", "-0.5", nameof(AppStrings.QuantityNegative))]
+    public async Task Invalid_numbers_do_not_save(string price, string quantity, string messageKey)
     {
         var repository = new FakeProductRepository();
         var navigator = new FakeAppNavigator();
@@ -47,7 +47,7 @@ public sealed class ProductEditViewModelTests
 
         Assert.Empty(repository.Saved);
         Assert.Equal(0, navigator.BackCount);
-        Assert.Equal(expectedMessage, viewModel.ErrorMessage);
+        Assert.Equal(Message(messageKey), viewModel.ErrorMessage);
     }
 
     [Fact]
@@ -209,6 +209,15 @@ public sealed class ProductEditViewModelTests
 
         Assert.True(viewModel.SaveCommand.CanExecute(null));
     }
+
+    private static string Message(string key) => key switch
+    {
+        nameof(AppStrings.PriceInvalid) => AppStrings.PriceInvalid,
+        nameof(AppStrings.PriceNegative) => AppStrings.PriceNegative,
+        nameof(AppStrings.QuantityInvalid) => AppStrings.QuantityInvalid,
+        nameof(AppStrings.QuantityNegative) => AppStrings.QuantityNegative,
+        _ => throw new ArgumentOutOfRangeException(nameof(key), key, "Unknown string resource."),
+    };
 
     private static ProductEditViewModel Create(
         FakeProductRepository repository,

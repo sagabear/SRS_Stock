@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="SRS_Stock.Views.ProductEditPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:loc="clr-namespace:SRS_Stock.Localization"
+    xmlns:views="clr-namespace:SRS_Stock.Views"
+    Title="{Binding Title}"
+    HideSoftInputOnTapped="True"
+    Shell.NavBarIsVisible="False">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <views:PageHeader
+            Padding="{StaticResource HeaderPadding}"
+            Title="{Binding Title}"
+            ShowsBackButton="True" />
+
+        <ScrollView Grid.Row="1" HorizontalScrollBarVisibility="Never">
+            <VerticalStackLayout
+                Padding="{StaticResource PagePadding}"
+                Spacing="16"
+                MaximumWidthRequest="{StaticResource FormWidth}"
+                HorizontalOptions="Fill">
+
+                <Border
+                    Style="{StaticResource ErrorBanner}"
+                    IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmpty}}">
+                    <Label
+                        Text="{Binding ErrorMessage}"
+                        Style="{StaticResource ErrorText}" />
+                </Border>
+
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="{loc:Translate NameLabel}" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource FieldBorder}">
+                        <Entry Text="{Binding Name}" ReturnType="Next" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="{loc:Translate BarcodeLabel}" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource FieldBorder}">
+                        <Entry Text="{Binding Barcode}" ReturnType="Next" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="{loc:Translate PriceLabel}" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource FieldBorder}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Entry
+                                Text="{Binding PriceText}"
+                                Keyboard="Numeric"
+                                ReturnType="Next" />
+                            <Label
+                                Grid.Column="1"
+                                Text="{loc:Translate CurrencySuffix}"
+                                Style="{StaticResource Caption}"
+                                VerticalOptions="Center"
+                                Margin="8,0,4,0" />
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Spacing="6">
+                    <Label Text="{loc:Translate QuantityLabel}" Style="{StaticResource FieldLabel}" />
+                    <Border Style="{StaticResource FieldBorder}">
+                        <Entry
+                            Text="{Binding QuantityText}"
+                            Keyboard="Numeric"
+                            ReturnType="Done" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <ActivityIndicator
+                    IsRunning="{Binding IsBusy}"
+                    IsVisible="{Binding IsBusy}"
+                    HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <BoxView
+            Grid.Row="2"
+            Color="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}" />
+        <BoxView
+            Grid.Row="2"
+            HeightRequest="1"
+            VerticalOptions="Start"
+            HorizontalOptions="Fill"
+            Color="{AppThemeBinding Light={StaticResource LineLight}, Dark={StaticResource LineDark}}" />
+        <Button
+            Grid.Row="2"
+            Margin="{StaticResource PagePadding}"
+            Text="{loc:Translate Save}"
+            Command="{Binding SaveCommand}"
+            MaximumWidthRequest="{StaticResource FormWidth}"
+            HorizontalOptions="Fill" />
+    </Grid>
+</ContentPage>

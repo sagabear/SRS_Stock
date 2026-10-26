@@ -6,5 +6,9 @@ public static class Routes
 
     public const string ProductEdit = "product";
 
+    public const string Settings = "settings";
+
+    public const string About = "about";
+
     public const string ProductIdParameter = "id";
 }

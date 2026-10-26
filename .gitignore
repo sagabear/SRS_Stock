@@ -3,3 +3,7 @@
 /tests/SRS_Stock.Tests/obj/Debug
 /tests/SRS_Stock.Tests/obj
 /src/SRS_Stock.Core/bin/Debug
+/src/SRS_Stock/bin
+/src/SRS_Stock/obj
+/tests/SRS_Stock.Tests/bin
+/.vs/SRS_Stock.slnx/FileContentIndex

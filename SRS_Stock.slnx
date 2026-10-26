@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/SRS_Stock.Core/SRS_Stock.Core.csproj" />
+    <Project Path="src/SRS_Stock/SRS_Stock.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SRS_Stock.Tests/SRS_Stock.Tests.csproj" />

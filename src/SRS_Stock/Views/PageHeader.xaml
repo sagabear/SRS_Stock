@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    x:Class="SRS_Stock.Views.PageHeader"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:loc="clr-namespace:SRS_Stock.Localization"
+    x:Name="Root">
+
+    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
+        <HorizontalStackLayout Spacing="0" VerticalOptions="Center">
+            <Button
+                Text="&#x2630;"
+                Style="{StaticResource MenuButton}"
+                Clicked="OpenMenu"
+                SemanticProperties.Description="{loc:Translate OpenMenu}"
+                VerticalOptions="Center" />
+            <Button
+                Text="&#x2190;"
+                Style="{StaticResource MenuButton}"
+                Clicked="GoBack"
+                IsVisible="{Binding ShowsBackButton, Source={x:Reference Root}}"
+                SemanticProperties.Description="{loc:Translate Back}"
+                VerticalOptions="Center" />
+        </HorizontalStackLayout>
+        <Grid Grid.Column="1">
+            <Label
+                Text="{Binding Title, Source={x:Reference Root}}"
+                Style="{StaticResource DisplayTitle}"
+                LineBreakMode="TailTruncation"
+                VerticalOptions="Center" />
+        </Grid>
+        <ContentView
+            Grid.Column="2"
+            Content="{Binding Trailing, Source={x:Reference Root}}"
+            VerticalOptions="Center" />
+    </Grid>
+</ContentView>

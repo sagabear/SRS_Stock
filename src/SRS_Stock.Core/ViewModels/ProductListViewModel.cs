@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using SRS_Stock.Core.Localization;
 using SRS_Stock.Core.Models;
 using SRS_Stock.Core.Navigation;
 using SRS_Stock.Core.Resources;
@@ -18,15 +19,18 @@ public partial class ProductListViewModel : ObservableObject
     private readonly ILogger<ProductListViewModel> _logger;
     private readonly TimeSpan _searchDebounce;
     private readonly object _loadGate = new();
+    private readonly EventHandler? _onLanguageChanged;
     private CancellationTokenSource? _loadCts;
     private int _activeLoads;
+    private string? _errorKey;
 
     public ProductListViewModel(
         IProductRepository repository,
         IAppNavigator navigator,
         IUiDispatcher uiDispatcher,
         ILogger<ProductListViewModel> logger,
-        TimeSpan? searchDebounce = null)
+        TimeSpan? searchDebounce = null,
+        ILanguageService? languageService = null)
     {
         ArgumentNullException.ThrowIfNull(repository);
         ArgumentNullException.ThrowIfNull(navigator);
@@ -39,11 +43,19 @@ public partial class ProductListViewModel : ObservableObject
         _logger = logger;
         _searchDebounce = searchDebounce ?? TimeSpan.FromMilliseconds(300);
         Products = new ObservableCollection<Product>();
+        if (languageService is not null)
+        {
+            _onLanguageChanged = (_, _) => _ = _uiDispatcher.InvokeAsync(RefreshLocalizedText);
+            languageService.Changed += _onLanguageChanged;
+        }
     }
 
     public ObservableCollection<Product> Products { get; }
 
     public bool IsEmpty => HasLoaded && Products.Count == 0;
+
+    public string EmptyMessage =>
+        string.IsNullOrWhiteSpace(SearchText) ? AppStrings.EmptyList : AppStrings.NoSearchResults;
 
     [ObservableProperty]
     private string _searchText = string.Empty;
@@ -59,7 +71,11 @@ public partial class ProductListViewModel : ObservableObject
 
     internal Task PendingSearch { get; private set; } = Task.CompletedTask;
 
-    partial void OnSearchTextChanged(string value) => PendingSearch = DebouncedSearchAsync();
+    partial void OnSearchTextChanged(string value)
+    {
+        OnPropertyChanged(nameof(EmptyMessage));
+        PendingSearch = DebouncedSearchAsync();
+    }
 
     partial void OnHasLoadedChanged(bool value) => OnPropertyChanged(nameof(IsEmpty));
 
@@ -81,7 +97,7 @@ public partial class ProductListViewModel : ObservableObject
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to open the new product form");
-            await DispatchAsync(() => ErrorMessage = AppStrings.UnexpectedError).ConfigureAwait(false);
+            await DispatchAsync(() => SetError(nameof(AppStrings.UnexpectedError))).ConfigureAwait(false);
         }
     }
 
@@ -99,7 +115,7 @@ public partial class ProductListViewModel : ObservableObject
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to open product {ProductId}", product.Id);
-            await DispatchAsync(() => ErrorMessage = AppStrings.UnexpectedError).ConfigureAwait(false);
+            await DispatchAsync(() => SetError(nameof(AppStrings.UnexpectedError))).ConfigureAwait(false);
         }
     }
 
@@ -141,7 +157,7 @@ public partial class ProductListViewModel : ObservableObject
             if (cancellationToken.IsCancellationRequested)
                 return;
 
-            await DispatchAsync(() => ErrorMessage = string.Empty).ConfigureAwait(false);
+            await DispatchAsync(() => SetError(null)).ConfigureAwait(false);
             var search = string.IsNullOrWhiteSpace(SearchText) ? null : SearchText.Trim();
             _logger.LogInformation("Loading products. Filtered: {Filtered}", search is not null);
 
@@ -168,7 +184,7 @@ public partial class ProductListViewModel : ObservableObject
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to load products");
-            await DispatchAsync(() => ErrorMessage = AppStrings.ProductsLoadFailed).ConfigureAwait(false);
+            await DispatchAsync(() => SetError(nameof(AppStrings.ProductsLoadFailed))).ConfigureAwait(false);
         }
         finally
         {
@@ -176,6 +192,19 @@ public partial class ProductListViewModel : ObservableObject
             if (activeLoads == 0)
                 await DispatchAsync(() => IsBusy = false).ConfigureAwait(false);
         }
+    }
+
+    private void RefreshLocalizedText()
+    {
+        OnPropertyChanged(nameof(EmptyMessage));
+        if (_errorKey is not null)
+            ErrorMessage = AppStrings.Get(_errorKey);
+    }
+
+    private void SetError(string? key)
+    {
+        _errorKey = key;
+        ErrorMessage = key is null ? string.Empty : AppStrings.Get(key);
     }
 
     private Task DispatchAsync(Action action) => _uiDispatcher.InvokeAsync(action);

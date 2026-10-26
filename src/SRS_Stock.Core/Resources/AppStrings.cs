@@ -5,6 +5,8 @@ namespace SRS_Stock.Core.Resources;
 
 public static class AppStrings
 {
+    // Default text is Hungarian in AppStrings.resx.
+    // Add another language as Resources/AppStrings.{culture}.resx, for example AppStrings.en.resx.
     private static readonly ResourceManager ResourceManager = new(
         "SRS_Stock.Core.Resources.AppStrings",
         typeof(AppStrings).Assembly);
@@ -35,6 +37,12 @@ public static class AppStrings
 
     public static string EmptyList => Get(nameof(EmptyList));
 
+    public static string NoSearchResults => Get(nameof(NoSearchResults));
+
+    public static string OutOfStock => Get(nameof(OutOfStock));
+
+    public static string CurrencySuffix => Get(nameof(CurrencySuffix));
+
     public static string AppTitle => Get(nameof(AppTitle));
 
     public static string SearchPlaceholder => Get(nameof(SearchPlaceholder));
@@ -51,7 +59,36 @@ public static class AppStrings
 
     public static string AddProduct => Get(nameof(AddProduct));
 
-    private static string Get(string name) =>
-        ResourceManager.GetString(name, CultureInfo.CurrentUICulture)
-        ?? throw new InvalidOperationException($"Missing string resource '{name}'.");
+    public static string MenuInventory => Get(nameof(MenuInventory));
+
+    public static string MenuSettings => Get(nameof(MenuSettings));
+
+    public static string MenuAbout => Get(nameof(MenuAbout));
+
+    public static string OpenMenu => Get(nameof(OpenMenu));
+
+    public static string LanguageLabel => Get(nameof(LanguageLabel));
+
+    public static string LanguageHint => Get(nameof(LanguageHint));
+
+    public static string AboutSummary => Get(nameof(AboutSummary));
+
+    public static string AboutVersion => Get(nameof(AboutVersion));
+
+    public static string Back => Get(nameof(Back));
+
+    public static string ThemeLabel => Get(nameof(ThemeLabel));
+
+    public static string ThemeSystem => Get(nameof(ThemeSystem));
+
+    public static string ThemeLight => Get(nameof(ThemeLight));
+
+    public static string ThemeDark => Get(nameof(ThemeDark));
+
+    public static string Get(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        return ResourceManager.GetString(name, CultureInfo.CurrentUICulture)
+            ?? throw new InvalidOperationException($"Missing string resource '{name}'.");
+    }
 }

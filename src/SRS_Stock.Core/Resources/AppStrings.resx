@@ -51,6 +51,15 @@
   <data name="EmptyList" xml:space="preserve">
     <value>Még nincs termék.</value>
   </data>
+  <data name="NoSearchResults" xml:space="preserve">
+    <value>Nincs találat.</value>
+  </data>
+  <data name="OutOfStock" xml:space="preserve">
+    <value>Nincs készleten</value>
+  </data>
+  <data name="CurrencySuffix" xml:space="preserve">
+    <value>Ft</value>
+  </data>
   <data name="AppTitle" xml:space="preserve">
     <value>Leltár</value>
   </data>
@@ -74,5 +83,44 @@
   </data>
   <data name="AddProduct" xml:space="preserve">
     <value>Új termék</value>
+  </data>
+  <data name="MenuInventory" xml:space="preserve">
+    <value>Leltár</value>
+  </data>
+  <data name="MenuSettings" xml:space="preserve">
+    <value>Beállítások</value>
+  </data>
+  <data name="MenuAbout" xml:space="preserve">
+    <value>Rólunk</value>
+  </data>
+  <data name="OpenMenu" xml:space="preserve">
+    <value>Menü</value>
+  </data>
+  <data name="LanguageLabel" xml:space="preserve">
+    <value>Nyelv</value>
+  </data>
+  <data name="LanguageHint" xml:space="preserve">
+    <value>A választott nyelv azonnal érvénybe lép.</value>
+  </data>
+  <data name="AboutSummary" xml:space="preserve">
+    <value>Ez az alkalmazás ezen az eszközön tartja nyilván a termékek nevét, vonalkódját, árát és mennyiségét.</value>
+  </data>
+  <data name="AboutVersion" xml:space="preserve">
+    <value>Verzió</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Vissza</value>
+  </data>
+  <data name="ThemeLabel" xml:space="preserve">
+    <value>Megjelenés</value>
+  </data>
+  <data name="ThemeSystem" xml:space="preserve">
+    <value>Rendszerhez igazodik</value>
+  </data>
+  <data name="ThemeLight" xml:space="preserve">
+    <value>Világos</value>
+  </data>
+  <data name="ThemeDark" xml:space="preserve">
+    <value>Sötét</value>
   </data>
 </root>

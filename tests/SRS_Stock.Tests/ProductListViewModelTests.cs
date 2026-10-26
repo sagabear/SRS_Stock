@@ -38,6 +38,18 @@ public sealed class ProductListViewModelTests
     }
 
     [Fact]
+    public void Empty_message_follows_the_search_text()
+    {
+        var viewModel = Create(new FakeProductRepository(), debounce: TimeSpan.Zero);
+
+        Assert.Equal(AppStrings.EmptyList, viewModel.EmptyMessage);
+
+        viewModel.SearchText = "tej";
+
+        Assert.Equal(AppStrings.NoSearchResults, viewModel.EmptyMessage);
+    }
+
+    [Fact]
     public async Task Load_of_an_empty_catalog_is_empty()
     {
         var viewModel = Create(new FakeProductRepository());
@@ -114,6 +126,29 @@ public sealed class ProductListViewModelTests
         Assert.Empty(navigator.EditedIds);
         Assert.Equal(AppStrings.UnexpectedError, viewModel.ErrorMessage);
         Assert.Contains(logger.Entries, entry => entry.Exception is InvalidOperationException);
+    }
+
+    [Fact]
+    public void LanguageChange_RefreshesTheEmptyMessage()
+    {
+        var language = new FakeLanguageService();
+        var viewModel = new ProductListViewModel(
+            new FakeProductRepository(),
+            new FakeAppNavigator(),
+            new InlineUiDispatcher(),
+            new ListLogger<ProductListViewModel>(),
+            TimeSpan.Zero,
+            language);
+        var raised = false;
+        viewModel.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(ProductListViewModel.EmptyMessage))
+                raised = true;
+        };
+
+        language.Apply("en");
+
+        Assert.True(raised);
     }
 
     private static ProductListViewModel Create(

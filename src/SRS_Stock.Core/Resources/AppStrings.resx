@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="NameRequired" xml:space="preserve">
+    <value>A név megadása kötelező.</value>
+  </data>
+  <data name="PriceInvalid" xml:space="preserve">
+    <value>Az ár nem érvényes szám.</value>
+  </data>
+  <data name="PriceNegative" xml:space="preserve">
+    <value>Az ár nem lehet negatív.</value>
+  </data>
+  <data name="QuantityInvalid" xml:space="preserve">
+    <value>A mennyiség nem érvényes szám.</value>
+  </data>
+  <data name="QuantityNegative" xml:space="preserve">
+    <value>A mennyiség nem lehet negatív.</value>
+  </data>
+  <data name="ProductsLoadFailed" xml:space="preserve">
+    <value>A termékek betöltése nem sikerült.</value>
+  </data>
+  <data name="ProductLoadFailed" xml:space="preserve">
+    <value>A termék betöltése nem sikerült.</value>
+  </data>
+  <data name="SaveFailed" xml:space="preserve">
+    <value>A mentés nem sikerült.</value>
+  </data>
+  <data name="ProductNotFound" xml:space="preserve">
+    <value>A termék nem található.</value>
+  </data>
+  <data name="UnexpectedError" xml:space="preserve">
+    <value>Váratlan hiba történt.</value>
+  </data>
+  <data name="NewProductTitle" xml:space="preserve">
+    <value>Új termék</value>
+  </data>
+  <data name="EditProductTitle" xml:space="preserve">
+    <value>Termék</value>
+  </data>
+  <data name="EmptyList" xml:space="preserve">
+    <value>Még nincs termék.</value>
+  </data>
+  <data name="AppTitle" xml:space="preserve">
+    <value>Leltár</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Keresés név vagy vonalkód alapján</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Mentés</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Név</value>
+  </data>
+  <data name="BarcodeLabel" xml:space="preserve">
+    <value>Vonalkód</value>
+  </data>
+  <data name="PriceLabel" xml:space="preserve">
+    <value>Ár</value>
+  </data>
+  <data name="QuantityLabel" xml:space="preserve">
+    <value>Mennyiség</value>
+  </data>
+  <data name="AddProduct" xml:space="preserve">
+    <value>Új termék</value>
+  </data>
+</root>

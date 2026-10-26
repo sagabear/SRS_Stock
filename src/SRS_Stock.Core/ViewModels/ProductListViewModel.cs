@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,11 @@ public partial class ProductListViewModel : ObservableObject
     private CancellationTokenSource? _loadCts;
     private int _activeLoads;
     private string? _errorKey;
+    private ProductSort _sort = ProductSort.Name;
+    private int _itemCount;
+    private int _inStockCount;
+    private int _missingCount;
+    private decimal _stockValue;
 
     public ProductListViewModel(
         IProductRepository repository,
@@ -43,6 +49,7 @@ public partial class ProductListViewModel : ObservableObject
         _logger = logger;
         _searchDebounce = searchDebounce ?? TimeSpan.FromMilliseconds(300);
         Products = new ObservableCollection<Product>();
+        RefreshSortOptions();
         if (languageService is not null)
         {
             _onLanguageChanged = (_, _) => _ = _uiDispatcher.InvokeAsync(RefreshLocalizedText);
@@ -54,11 +61,38 @@ public partial class ProductListViewModel : ObservableObject
 
     public bool IsEmpty => HasLoaded && Products.Count == 0;
 
-    public string EmptyMessage =>
-        string.IsNullOrWhiteSpace(SearchText) ? AppStrings.EmptyList : AppStrings.NoSearchResults;
+    public string EmptyMessage
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(SearchText))
+                return AppStrings.NoSearchResults;
+
+            return MissingOnly ? AppStrings.EmptyMissing : AppStrings.EmptyList;
+        }
+    }
+
+    public string SummaryText => HasLoaded
+        ? string.Format(
+            CultureInfo.CurrentCulture,
+            AppStrings.StockSummary,
+            _itemCount,
+            _inStockCount,
+            _missingCount,
+            _stockValue,
+            AppStrings.CurrencySuffix)
+        : string.Empty;
+
+    public IReadOnlyList<ProductSortOption> SortOptions { get; private set; } = [];
 
     [ObservableProperty]
     private string _searchText = string.Empty;
+
+    [ObservableProperty]
+    private bool _missingOnly;
+
+    [ObservableProperty]
+    private ProductSortOption? _selectedSort;
 
     [ObservableProperty]
     private bool _isBusy;
@@ -78,6 +112,21 @@ public partial class ProductListViewModel : ObservableObject
     }
 
     partial void OnHasLoadedChanged(bool value) => OnPropertyChanged(nameof(IsEmpty));
+
+    partial void OnMissingOnlyChanged(bool value)
+    {
+        OnPropertyChanged(nameof(EmptyMessage));
+        PendingSearch = ReloadAsync();
+    }
+
+    partial void OnSelectedSortChanged(ProductSortOption? value)
+    {
+        if (value is null || value.Sort == _sort)
+            return;
+
+        _sort = value.Sort;
+        PendingSearch = ReloadAsync();
+    }
 
     [RelayCommand]
     private Task LoadAsync()
@@ -161,7 +210,9 @@ public partial class ProductListViewModel : ObservableObject
             var search = string.IsNullOrWhiteSpace(SearchText) ? null : SearchText.Trim();
             _logger.LogInformation("Loading products. Filtered: {Filtered}", search is not null);
 
-            var items = await _repository.GetAsync(search, cancellationToken).ConfigureAwait(false);
+            var items = await _repository
+                .GetAsync(search, MissingOnly, _sort, cancellationToken)
+                .ConfigureAwait(false);
             if (cancellationToken.IsCancellationRequested)
                 return;
 
@@ -172,7 +223,9 @@ public partial class ProductListViewModel : ObservableObject
                     Products.Add(item);
 
                 HasLoaded = true;
+                UpdateSummary(items);
                 OnPropertyChanged(nameof(IsEmpty));
+                OnPropertyChanged(nameof(SummaryText));
             }).ConfigureAwait(false);
 
             _logger.LogInformation("Showing {Count} products", items.Count);
@@ -194,9 +247,48 @@ public partial class ProductListViewModel : ObservableObject
         }
     }
 
+    private async Task ReloadAsync()
+    {
+        var token = RestartLoad();
+        try
+        {
+            await LoadCoreAsync(token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogDebug("Product load was cancelled");
+        }
+    }
+
+    private void UpdateSummary(IReadOnlyList<Product> items)
+    {
+        _itemCount = items.Count;
+        _missingCount = items.Count(product => product.Quantity == 0);
+        _inStockCount = _itemCount - _missingCount;
+        _stockValue = items.Sum(product => product.Price * product.Quantity);
+    }
+
+    private void RefreshSortOptions()
+    {
+        var sort = SelectedSort?.Sort ?? _sort;
+        SortOptions =
+        [
+            new(ProductSort.Name, AppStrings.SortByName),
+            new(ProductSort.Price, AppStrings.SortByPrice),
+            new(ProductSort.Quantity, AppStrings.SortByQuantity),
+            new(ProductSort.OutOfStockFirst, AppStrings.SortOutOfStockFirst),
+        ];
+        OnPropertyChanged(nameof(SortOptions));
+        var match = SortOptions.First(option => option.Sort == sort);
+        if (SelectedSort != match)
+            SelectedSort = match;
+    }
+
     private void RefreshLocalizedText()
     {
         OnPropertyChanged(nameof(EmptyMessage));
+        OnPropertyChanged(nameof(SummaryText));
+        RefreshSortOptions();
         if (_errorKey is not null)
             ErrorMessage = AppStrings.Get(_errorKey);
     }

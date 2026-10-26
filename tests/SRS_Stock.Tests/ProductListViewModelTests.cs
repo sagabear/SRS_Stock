@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 using SRS_Stock.Core.Models;
 using SRS_Stock.Core.Resources;
 using SRS_Stock.Core.Threading;
@@ -149,6 +150,42 @@ public sealed class ProductListViewModelTests
         language.Apply("en");
 
         Assert.True(raised);
+    }
+
+    [Fact]
+    public async Task Load_summarizes_the_visible_products()
+    {
+        var repository = new FakeProductRepository
+        {
+            Products =
+            {
+                new Product { Name = "Alma", Price = 10m, Quantity = 2m },
+                new Product { Name = "Körte", Price = 5m, Quantity = 0m },
+            },
+        };
+        var viewModel = Create(repository);
+
+        await viewModel.LoadCommand.ExecuteAsync(null);
+
+        Assert.Equal(
+            string.Format(CultureInfo.CurrentCulture, AppStrings.StockSummary, 2, 1, 1, 20m, AppStrings.CurrencySuffix),
+            viewModel.SummaryText);
+    }
+
+    [Fact]
+    public async Task Missing_filter_and_sort_are_sent_to_the_repository()
+    {
+        var repository = new FakeProductRepository();
+        var viewModel = Create(repository);
+        await viewModel.LoadCommand.ExecuteAsync(null);
+
+        viewModel.MissingOnly = true;
+        await viewModel.PendingSearch;
+        viewModel.SelectedSort = viewModel.SortOptions.Single(option => option.Sort == ProductSort.Price);
+        await viewModel.PendingSearch;
+
+        Assert.Contains(true, repository.MissingFilters);
+        Assert.Equal(ProductSort.Price, repository.Sorts[^1]);
     }
 
     private static ProductListViewModel Create(

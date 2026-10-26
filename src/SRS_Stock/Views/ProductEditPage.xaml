@@ -88,12 +88,20 @@
             VerticalOptions="Start"
             HorizontalOptions="Fill"
             Color="{AppThemeBinding Light={StaticResource LineLight}, Dark={StaticResource LineDark}}" />
-        <Button
+        <VerticalStackLayout
             Grid.Row="2"
             Margin="{StaticResource PagePadding}"
-            Text="{loc:Translate Save}"
-            Command="{Binding SaveCommand}"
+            Spacing="8"
             MaximumWidthRequest="{StaticResource FormWidth}"
-            HorizontalOptions="Fill" />
+            HorizontalOptions="Fill">
+            <Button
+                Text="{loc:Translate Delete}"
+                Style="{StaticResource DangerButton}"
+                Command="{Binding DeleteCommand}"
+                IsVisible="{Binding IsExisting}" />
+            <Button
+                Text="{loc:Translate Save}"
+                Command="{Binding SaveCommand}" />
+        </VerticalStackLayout>
     </Grid>
 </ContentPage>

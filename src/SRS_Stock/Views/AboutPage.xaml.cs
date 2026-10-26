@@ -9,5 +9,6 @@ public partial class AboutPage : ContentPage
         ArgumentNullException.ThrowIfNull(viewModel);
         BindingContext = viewModel;
         InitializeComponent();
+        PageSafeArea.Apply(this);
     }
 }

@@ -2,6 +2,7 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using SRS_Stock.Core.Interaction;
 using SRS_Stock.Core.Localization;
 using SRS_Stock.Core.Models;
 using SRS_Stock.Core.Navigation;
@@ -17,6 +18,7 @@ public partial class ProductEditViewModel : ObservableObject
     private readonly IAppNavigator _navigator;
     private readonly IUiDispatcher _uiDispatcher;
     private readonly ILogger<ProductEditViewModel> _logger;
+    private readonly IUserPrompt? _prompt;
     private readonly IFormatProvider? _format;
     private readonly EventHandler? _onLanguageChanged;
     private string? _errorKey;
@@ -27,7 +29,8 @@ public partial class ProductEditViewModel : ObservableObject
         IUiDispatcher uiDispatcher,
         ILogger<ProductEditViewModel> logger,
         IFormatProvider? formatProvider = null,
-        ILanguageService? languageService = null)
+        ILanguageService? languageService = null,
+        IUserPrompt? prompt = null)
     {
         ArgumentNullException.ThrowIfNull(repository);
         ArgumentNullException.ThrowIfNull(navigator);
@@ -38,6 +41,7 @@ public partial class ProductEditViewModel : ObservableObject
         _navigator = navigator;
         _uiDispatcher = uiDispatcher;
         _logger = logger;
+        _prompt = prompt;
         _format = formatProvider;
         if (languageService is not null)
         {
@@ -51,6 +55,8 @@ public partial class ProductEditViewModel : ObservableObject
     public int ProductId { get; private set; }
 
     public bool IsNew => ProductId == 0;
+
+    public bool IsExisting => !IsNew;
 
     public string Title => IsNew ? AppStrings.NewProductTitle : AppStrings.EditProductTitle;
 
@@ -68,6 +74,7 @@ public partial class ProductEditViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    [NotifyCanExecuteChangedFor(nameof(DeleteCommand))]
     private bool _isBusy;
 
     [ObservableProperty]
@@ -85,7 +92,9 @@ public partial class ProductEditViewModel : ObservableObject
         await DispatchAsync(() =>
         {
             OnPropertyChanged(nameof(IsNew));
+            OnPropertyChanged(nameof(IsExisting));
             OnPropertyChanged(nameof(Title));
+            DeleteCommand.NotifyCanExecuteChanged();
         }).ConfigureAwait(false);
         await LoadFormAsync().ConfigureAwait(false);
     }
@@ -115,6 +124,11 @@ public partial class ProductEditViewModel : ObservableObject
                 await DispatchAsync(() => SetError(nameof(AppStrings.UnexpectedError))).ConfigureAwait(false);
             }
         }
+        catch (DuplicateBarcodeException ex)
+        {
+            _logger.LogWarning(ex, "Product save rejected: barcode {Barcode} is already used", ex.Barcode);
+            await DispatchAsync(() => SetError(nameof(AppStrings.BarcodeInUse))).ConfigureAwait(false);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to save product {ProductId}", product.Id);
@@ -127,6 +141,52 @@ public partial class ProductEditViewModel : ObservableObject
     }
 
     private bool CanSave() => !IsBusy;
+
+    [RelayCommand(CanExecute = nameof(CanDelete))]
+    private async Task DeleteAsync()
+    {
+        if (IsNew || _prompt is null)
+            return;
+
+        var confirmed = await _prompt.ConfirmAsync(
+            AppStrings.DeleteTitle,
+            AppStrings.DeleteConfirm,
+            AppStrings.Delete,
+            AppStrings.Cancel).ConfigureAwait(false);
+        if (!confirmed)
+        {
+            _logger.LogInformation("Product {ProductId} delete was cancelled", ProductId);
+            return;
+        }
+
+        try
+        {
+            await DispatchAsync(() => IsBusy = true).ConfigureAwait(false);
+            await _repository.DeleteAsync(ProductId).ConfigureAwait(false);
+            _logger.LogInformation("Deleted product {ProductId}", ProductId);
+
+            try
+            {
+                await _navigator.GoBackAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to navigate back after deleting product {ProductId}", ProductId);
+                await DispatchAsync(() => SetError(nameof(AppStrings.UnexpectedError))).ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to delete product {ProductId}", ProductId);
+            await DispatchAsync(() => SetError(nameof(AppStrings.DeleteFailed))).ConfigureAwait(false);
+        }
+        finally
+        {
+            await DispatchAsync(() => IsBusy = false).ConfigureAwait(false);
+        }
+    }
+
+    private bool CanDelete() => !IsBusy && IsExisting;
 
     private async Task LoadFormAsync()
     {

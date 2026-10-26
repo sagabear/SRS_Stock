@@ -85,6 +85,34 @@ public static class AppStrings
 
     public static string ThemeDark => Get(nameof(ThemeDark));
 
+    public static string StockSummary => Get(nameof(StockSummary));
+
+    public static string SortLabel => Get(nameof(SortLabel));
+
+    public static string SortByName => Get(nameof(SortByName));
+
+    public static string SortByPrice => Get(nameof(SortByPrice));
+
+    public static string SortByQuantity => Get(nameof(SortByQuantity));
+
+    public static string SortOutOfStockFirst => Get(nameof(SortOutOfStockFirst));
+
+    public static string MissingOnly => Get(nameof(MissingOnly));
+
+    public static string EmptyMissing => Get(nameof(EmptyMissing));
+
+    public static string BarcodeInUse => Get(nameof(BarcodeInUse));
+
+    public static string Delete => Get(nameof(Delete));
+
+    public static string DeleteTitle => Get(nameof(DeleteTitle));
+
+    public static string DeleteConfirm => Get(nameof(DeleteConfirm));
+
+    public static string DeleteFailed => Get(nameof(DeleteFailed));
+
+    public static string Cancel => Get(nameof(Cancel));
+
     public static string Get(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);

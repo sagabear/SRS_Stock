@@ -9,6 +9,7 @@ public partial class ProductListPage : ContentPage
         ArgumentNullException.ThrowIfNull(viewModel);
         BindingContext = viewModel;
         InitializeComponent();
+        PageSafeArea.Apply(this);
     }
 
     protected override void OnAppearing()

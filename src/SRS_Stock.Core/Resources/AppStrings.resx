@@ -123,4 +123,46 @@
   <data name="ThemeDark" xml:space="preserve">
     <value>Sötét</value>
   </data>
+  <data name="StockSummary" xml:space="preserve">
+    <value>{0} tétel · {1} készleten · {2} hiányzik · {3:N2} {4}</value>
+  </data>
+  <data name="SortLabel" xml:space="preserve">
+    <value>Rendezés</value>
+  </data>
+  <data name="SortByName" xml:space="preserve">
+    <value>Név</value>
+  </data>
+  <data name="SortByPrice" xml:space="preserve">
+    <value>Ár</value>
+  </data>
+  <data name="SortByQuantity" xml:space="preserve">
+    <value>Mennyiség</value>
+  </data>
+  <data name="SortOutOfStockFirst" xml:space="preserve">
+    <value>Nincs készleten elöl</value>
+  </data>
+  <data name="MissingOnly" xml:space="preserve">
+    <value>Csak a hiányzó tételek</value>
+  </data>
+  <data name="EmptyMissing" xml:space="preserve">
+    <value>Nincs hiányzó tétel.</value>
+  </data>
+  <data name="BarcodeInUse" xml:space="preserve">
+    <value>Ez a vonalkód már használatban van.</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Törlés</value>
+  </data>
+  <data name="DeleteTitle" xml:space="preserve">
+    <value>Törlés</value>
+  </data>
+  <data name="DeleteConfirm" xml:space="preserve">
+    <value>Biztosan törlöd ezt a terméket?</value>
+  </data>
+  <data name="DeleteFailed" xml:space="preserve">
+    <value>A törlés nem sikerült.</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Mégse</value>
+  </data>
 </root>

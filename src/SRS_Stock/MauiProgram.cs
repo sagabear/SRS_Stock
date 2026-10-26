@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
+using SRS_Stock.Core.Interaction;
 using SRS_Stock.Core.Localization;
 using SRS_Stock.Core.Navigation;
 using SRS_Stock.Core.Services;
@@ -36,6 +37,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IThemeService, ThemeService>();
         builder.Services.AddSingleton<UiLocalizer>();
         builder.Services.AddSingleton<IAppNavigator, ShellAppNavigator>();
+        builder.Services.AddSingleton<IUserPrompt, ShellUserPrompt>();
         builder.Services.AddSingleton<IProductRepository>(static services =>
             new SqliteProductRepository(
                 Path.Combine(FileSystem.AppDataDirectory, "leltar.db"),

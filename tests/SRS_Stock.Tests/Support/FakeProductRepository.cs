@@ -9,9 +9,15 @@ internal sealed class FakeProductRepository : IProductRepository
 
     public List<string?> Searches { get; } = [];
 
+    public List<bool> MissingFilters { get; } = [];
+
+    public List<ProductSort> Sorts { get; } = [];
+
     public List<Product> Saved { get; } = [];
 
     public List<int> LoadedIds { get; } = [];
+
+    public List<int> DeletedIds { get; } = [];
 
     public Exception? GetException { get; set; }
 
@@ -21,10 +27,16 @@ internal sealed class FakeProductRepository : IProductRepository
 
     public Task InitializeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 
-    public Task<IReadOnlyList<Product>> GetAsync(string? search, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<Product>> GetAsync(
+        string? search,
+        bool missingOnly = false,
+        ProductSort sort = ProductSort.Name,
+        CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         Searches.Add(search);
+        MissingFilters.Add(missingOnly);
+        Sorts.Add(sort);
         if (GetException is not null)
             throw GetException;
 
@@ -51,6 +63,17 @@ internal sealed class FakeProductRepository : IProductRepository
             product.Id = Saved.Count + 1;
 
         Saved.Add(product);
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (SaveException is not null)
+            throw SaveException;
+
+        DeletedIds.Add(id);
+        Products.RemoveAll(product => product.Id == id);
         return Task.CompletedTask;
     }
 }

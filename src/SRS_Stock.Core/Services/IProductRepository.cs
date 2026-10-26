@@ -6,9 +6,15 @@ public interface IProductRepository
 {
     Task InitializeAsync(CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<Product>> GetAsync(string? search, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Product>> GetAsync(
+        string? search,
+        bool missingOnly = false,
+        ProductSort sort = ProductSort.Name,
+        CancellationToken cancellationToken = default);
 
     Task<Product?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
     Task SaveAsync(Product product, CancellationToken cancellationToken = default);
+
+    Task DeleteAsync(int id, CancellationToken cancellationToken = default);
 }

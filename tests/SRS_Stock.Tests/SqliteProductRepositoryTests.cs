@@ -170,6 +170,56 @@ public sealed class SqliteProductRepositoryTests : IAsyncLifetime
         Assert.Equal("databasePath", exception.ParamName);
     }
 
+    [Fact]
+    public async Task List_can_show_only_missing_items_and_sort_by_price()
+    {
+        var repository = Repository;
+        await repository.SaveAsync(new Product { Name = "Drága", Barcode = "1", Price = 30m, Quantity = 2m });
+        await repository.SaveAsync(new Product { Name = "Olcsó", Barcode = "2", Price = 5m, Quantity = 0m });
+        await repository.SaveAsync(new Product { Name = "Közepes", Barcode = "3", Price = 10m, Quantity = 1m });
+
+        var missing = await repository.GetAsync(null, missingOnly: true);
+        Assert.Equal("Olcsó", Assert.Single(missing).Name);
+
+        var byPrice = await repository.GetAsync(null, sort: ProductSort.Price);
+        Assert.Equal(["Olcsó", "Közepes", "Drága"], byPrice.Select(product => product.Name));
+
+        var outOfStockFirst = await repository.GetAsync(null, sort: ProductSort.OutOfStockFirst);
+        Assert.Equal("Olcsó", outOfStockFirst[0].Name);
+    }
+
+    [Fact]
+    public async Task Save_rejects_a_barcode_that_belongs_to_another_product()
+    {
+        var repository = Repository;
+        await repository.SaveAsync(new Product { Name = "Tej", Barcode = "111", Price = 1m, Quantity = 1m });
+        await repository.SaveAsync(new Product { Name = "Víz", Barcode = "", Price = 1m, Quantity = 1m });
+        await repository.SaveAsync(new Product { Name = "Lé", Barcode = "   ", Price = 1m, Quantity = 1m });
+
+        var duplicate = new Product { Name = "Másik", Barcode = "111", Price = 2m, Quantity = 1m };
+        await Assert.ThrowsAsync<DuplicateBarcodeException>(() => repository.SaveAsync(duplicate));
+
+        var existing = Assert.Single(await repository.GetAsync(null), product => product.Name == "Tej");
+        existing.Price = 9m;
+        await repository.SaveAsync(existing);
+
+        var updated = await repository.GetByIdAsync(existing.Id);
+        Assert.Equal(9m, updated!.Price);
+    }
+
+    [Fact]
+    public async Task Delete_removes_the_product()
+    {
+        var repository = Repository;
+        await repository.SaveAsync(new Product { Name = "Tej", Barcode = "111", Price = 1m, Quantity = 1m });
+        var id = Assert.Single(await repository.GetAsync(null)).Id;
+
+        await repository.DeleteAsync(id);
+
+        Assert.Empty(await repository.GetAsync(null));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => repository.DeleteAsync(id));
+    }
+
     private SqliteProductRepository Repository =>
         _repository ?? throw new InvalidOperationException("Repository was not created.");
 }

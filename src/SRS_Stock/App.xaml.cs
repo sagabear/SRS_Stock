@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using AndroidConfig = Microsoft.Maui.Controls.PlatformConfiguration.Android;
 using SRS_Stock.Core.Localization;
 using SRS_Stock.Core.Resources;
 using SRS_Stock.Core.Theming;
@@ -15,6 +17,9 @@ public partial class App : Application
         ArgumentNullException.ThrowIfNull(services);
         _services = services;
         InitializeComponent();
+        Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Application.UseWindowSoftInputModeAdjust(
+            this.On<AndroidConfig>(),
+            Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust.Resize);
         services.GetRequiredService<IThemeService>();
         Resources.Add(UiLocalizer.ResourceKey, services.GetRequiredService<UiLocalizer>());
     }

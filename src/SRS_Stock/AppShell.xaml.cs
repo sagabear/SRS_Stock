@@ -21,6 +21,14 @@ public partial class AppShell : Shell
         AddPage(localizer, nameof(AppStrings.MenuAbout), Routes.About, services.GetRequiredService<AboutPage>());
 
         Routing.RegisterRoute(Routes.ProductEdit, typeof(ProductEditPage));
+
+        var version = AppInfo.Current.VersionString;
+        VersionLabel.Text = string.IsNullOrWhiteSpace(version) ? "1.0" : version;
+        FlyoutVersion.SafeAreaEdges = new SafeAreaEdges(
+            SafeAreaRegions.None,
+            SafeAreaRegions.None,
+            SafeAreaRegions.None,
+            SafeAreaRegions.Container);
     }
 
     protected override void OnSizeAllocated(double width, double height)

@@ -10,6 +10,7 @@ public partial class ProductEditPage : ContentPage, IQueryAttributable
         ArgumentNullException.ThrowIfNull(viewModel);
         BindingContext = viewModel;
         InitializeComponent();
+        PageSafeArea.Apply(this);
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)

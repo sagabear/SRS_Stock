@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.Extensions.Logging;
+using SRS_Stock.Core.Services;
 using SRS_Stock.Core.Models;
 using SRS_Stock.Core.Resources;
 using SRS_Stock.Core.Threading;
@@ -210,6 +211,59 @@ public sealed class ProductEditViewModelTests
         Assert.True(viewModel.SaveCommand.CanExecute(null));
     }
 
+    [Fact]
+    public async Task Duplicate_barcode_is_shown_and_does_not_leave_the_form()
+    {
+        var repository = new FakeProductRepository
+        {
+            SaveException = new DuplicateBarcodeException("111"),
+        };
+        var navigator = new FakeAppNavigator();
+        var viewModel = Create(repository, navigator);
+        viewModel.Name = "Tej";
+        viewModel.Barcode = "111";
+        viewModel.PriceText = "1";
+        viewModel.QuantityText = "1";
+
+        await viewModel.SaveCommand.ExecuteAsync(null);
+
+        Assert.Equal(AppStrings.BarcodeInUse, viewModel.ErrorMessage);
+        Assert.Equal(0, navigator.BackCount);
+        Assert.False(viewModel.IsBusy);
+    }
+
+    [Fact]
+    public async Task Delete_asks_for_confirmation_and_goes_back()
+    {
+        var repository = new FakeProductRepository();
+        repository.Products.Add(new Product { Id = 4, Name = "Tej", Price = 1m, Quantity = 1m });
+        var navigator = new FakeAppNavigator();
+        var prompt = new FakeUserPrompt();
+        var viewModel = Create(repository, navigator, prompt: prompt);
+        await viewModel.ApplyNavigationAsync(4);
+
+        await viewModel.DeleteCommand.ExecuteAsync(null);
+
+        Assert.Equal(1, prompt.Asks);
+        Assert.Equal([4], repository.DeletedIds);
+        Assert.Equal(1, navigator.BackCount);
+    }
+
+    [Fact]
+    public async Task Cancelled_delete_keeps_the_product()
+    {
+        var repository = new FakeProductRepository();
+        repository.Products.Add(new Product { Id = 4, Name = "Tej", Price = 1m, Quantity = 1m });
+        var navigator = new FakeAppNavigator();
+        var viewModel = Create(repository, navigator, prompt: new FakeUserPrompt { Result = false });
+        await viewModel.ApplyNavigationAsync(4);
+
+        await viewModel.DeleteCommand.ExecuteAsync(null);
+
+        Assert.Empty(repository.DeletedIds);
+        Assert.Equal(0, navigator.BackCount);
+    }
+
     private static string Message(string key) => key switch
     {
         nameof(AppStrings.PriceInvalid) => AppStrings.PriceInvalid,
@@ -222,11 +276,13 @@ public sealed class ProductEditViewModelTests
     private static ProductEditViewModel Create(
         FakeProductRepository repository,
         FakeAppNavigator? navigator = null,
-        ListLogger<ProductEditViewModel>? logger = null) =>
+        ListLogger<ProductEditViewModel>? logger = null,
+        FakeUserPrompt? prompt = null) =>
         new(
             repository,
             navigator ?? new FakeAppNavigator(),
             new InlineUiDispatcher(),
             logger ?? new ListLogger<ProductEditViewModel>(),
-            CultureInfo.InvariantCulture);
+            CultureInfo.InvariantCulture,
+            prompt: prompt);
 }

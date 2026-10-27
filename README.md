@@ -30,3 +30,4 @@ Leadáshoz:
 - Eltérés lista, elindítod a számolást, termékenként beírod a talált mennyiséget, a végén pedig egy eltéréslista mutatja, hol volt több vagy kevesebb a nyilvántartottnál
 - A loggolást ugy kellene megcsinálni, hogy az az eszközről kimenthető legyen egy fájlban pl megosztással vagy emailben küldéssel
 - Felület design-ját frissiteném átbeszélném az illetékessel milyen legyen
+- Esetleg login-t és uer kezelést és a muveleteik naplózását
